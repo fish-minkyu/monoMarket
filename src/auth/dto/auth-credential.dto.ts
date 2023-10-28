@@ -7,4 +7,7 @@ export class AuthCredentialsDto {
 
   @IsString()
   password: string
+
+  @IsString()
+  confirm?: string
 }
