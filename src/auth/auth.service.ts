@@ -1,10 +1,11 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, UseGuards } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm'
 import { AuthRepository } from './auth.repository';
 import { AuthCredentialsDto } from './dto/auth-credential.dto';
 import { LoginCredentialsDto } from './dto/Login-credential.dto'
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs'
+import { AuthGuard } from '@nestjs/passport';
 
 @Injectable()
 export class AuthService {
@@ -42,7 +43,10 @@ export class AuthService {
 
   }
 
-  // async dropOut
+  @UseGuards(AuthGuard())
+  async dropOut() {
+    return this.authRepository.dropOut()
+  }
 
   // async logOut
 }

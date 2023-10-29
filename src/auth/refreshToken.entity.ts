@@ -1,12 +1,15 @@
-import { BaseEntity, Column, PrimaryGeneratedColumn } from "typeorm";
+import { Entity, BaseEntity, Column, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { User } from './user.entity'
 
-export class refreshToken extends BaseEntity {
+@Entity()
+export class RefreshToken extends BaseEntity {
   @PrimaryGeneratedColumn()
   refreshId: number
 
   @Column()
-  userId: string
-
-  @Column()
   refreshToken: string
+
+  @OneToOne(type => User, user => user.userId, { eager: false })
+  @JoinColumn()
+  userId: string
 }
