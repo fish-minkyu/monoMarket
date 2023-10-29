@@ -1,7 +1,8 @@
 import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm'
-import { AuthRepository } from './authRepository';
+import { AuthRepository } from './auth.repository';
 import { AuthCredentialsDto } from './dto/auth-credential.dto';
+import { LoginCredentialsDto } from './dto/Login-credential.dto'
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs'
 
@@ -25,8 +26,8 @@ export class AuthService {
     return this.authRepository.createUser(authCredentialsDto)
   }
 
-  async logIn(authCredentialsDto: AuthCredentialsDto): Promise<{accessToken: string}> {
-      const { email, password } = authCredentialsDto
+  async logIn(loginCredentialsDto: LoginCredentialsDto): Promise<{accessToken: string}> {
+      const { email, password } = loginCredentialsDto
       const user = await this.authRepository.findOne({ where: { email } })
       console.log('authService_user', user)
 
@@ -43,5 +44,5 @@ export class AuthService {
 
   // async dropOut
 
-  // 
+  // async logOut
 }

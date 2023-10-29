@@ -1,8 +1,9 @@
 import { Repository, DataSource } from 'typeorm'
 import { User } from './user.entity'
+import { ConflictException, Injectable, InternalServerErrorException } from '@nestjs/common'
 import { AuthCredentialsDto } from './dto/auth-credential.dto'
 import * as bcrypt from 'bcryptjs'
-import { ConflictException, Injectable, InternalServerErrorException } from '@nestjs/common'
+
 
 @Injectable()
 export class AuthRepository extends Repository<User> {
@@ -11,14 +12,16 @@ export class AuthRepository extends Repository<User> {
   }
 
   async createUser(authCredentialsDto: AuthCredentialsDto): Promise<void> {
-    const { email, password } = authCredentialsDto
+    const { email, nickname, password } = authCredentialsDto
 
     const salt = await bcrypt.genSalt()
     const hashedPassword = await bcrypt.hash(password, salt)
-    const user = this.create({ email, password: hashedPassword})
+    const user = this.create({ email, nickname, password: hashedPassword})
 
     try {
+      
       await this.save(user)
+      console.log('authRepository', '회원가입 성공')
     } catch (err) {
       // 23505
       // : PostgreSQL DB에서 나타나는 데이터베이스 무결성 제약 조건을 위반할 때 발생하는 코드

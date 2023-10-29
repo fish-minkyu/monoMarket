@@ -6,4 +6,7 @@ export class refreshToken extends BaseEntity {
 
   @Column()
   userId: string
+
+  @Column()
+  refreshToken: string
 }

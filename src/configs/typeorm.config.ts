@@ -6,7 +6,7 @@ export const typeORMConfig: TypeOrmModuleOptions = {
   port: 5432, // postgfres 기본 포트
   username: 'postgres',
   password: 'postgres',
-  database: 'board-app',
-  entities: [__dirname + '/../**/*.entitiy.{js,ts}'],
+  database: 'monoMarket',
+  entities: [__dirname + '/../**/*.entity.{js,ts}'],
   synchronize: true
 }

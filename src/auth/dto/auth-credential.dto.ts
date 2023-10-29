@@ -6,6 +6,9 @@ export class AuthCredentialsDto {
   email: string
 
   @IsString()
+  nickname: string
+
+  @IsString()
   password: string
 
   @IsString()
