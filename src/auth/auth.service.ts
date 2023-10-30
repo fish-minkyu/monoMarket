@@ -5,7 +5,7 @@ import { AuthCredentialsDto } from './dto/auth-credential.dto';
 import { LoginCredentialsDto } from './dto/Login-credential.dto'
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs'
-import { AuthGuard } from '@nestjs/passport';
+import { User } from './user.entity'
 
 @Injectable()
 export class AuthService {
@@ -16,6 +16,7 @@ export class AuthService {
     private jwtService: JwtService
     ) {}
 
+  // 회원가입
   async signUp(authCredentialsDto: AuthCredentialsDto): Promise<void> {
     const { password, confirm } = authCredentialsDto
 
@@ -27,26 +28,36 @@ export class AuthService {
     return this.authRepository.createUser(authCredentialsDto)
   }
 
-  async logIn(loginCredentialsDto: LoginCredentialsDto): Promise<{accessToken: string}> {
+  // 회원탈퇴
+  async deleteUser(user: User): Promise<void> {
+    const userId = user.userId
+    const result = await this.authRepository.delete(userId)
+    console.log(result)
+  }
+
+  // 로그인
+  async logIn(loginCredentialsDto: LoginCredentialsDto): Promise<{accessToken: string, refreshToken: string}> {
       const { email, password } = loginCredentialsDto
       const user = await this.authRepository.findOne({ where: { email } })
-      console.log('authService_user', user)
+      // console.log('authService_user', user.userId)
 
       if (user && (await bcrypt.compare(password, user.password))) {
-        const payload = { email } // userId로 바꿔보기
-        const accessToken = await this.jwtService.sign(payload)
+        const payload = { userId: user.userId } 
+        const accessToken = this.jwtService.sign(payload)
 
-        return { accessToken }
+        const refreshPayload =  { nickname: user.nickname }
+        const refreshToken = this.jwtService.sign(refreshPayload, {
+          secret: 'masterKey',
+          expiresIn: 36000
+        })
+
+        return { accessToken, refreshToken }
       } else {
         throw new UnauthorizedException('login failed')
       }
 
   }
 
-  @UseGuards(AuthGuard())
-  async dropOut() {
-    return this.authRepository.dropOut()
-  }
-
+  // 로그아웃
   // async logOut
 }

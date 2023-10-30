@@ -35,4 +35,8 @@ export class AuthRepository extends Repository<User> {
       }
     }
   }
+
+  async deleteUser(user: any): Promise<void> {
+    await this.delete(user)
+  }
 }
