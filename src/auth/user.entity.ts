@@ -1,5 +1,4 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn, Unique, OneToOne } from "typeorm"
-import { RefreshToken } from './refreshToken.entity'
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn, Unique } from "typeorm"
 
 @Entity()
 @Unique(['email', 'nickname'])
@@ -16,6 +15,9 @@ export class User extends BaseEntity {
   @Column()
   password: string
 
-  @OneToOne(type => RefreshToken, refreshToken => refreshToken.userId, { eager: false })
-  refreshToken: RefreshToken
+  @Column({ nullable: true })
+  currentRefreshToken: string
+
+  @Column({ type: 'datetime', nullable: true })
+  currentRefreshTokenExp: Date
 }

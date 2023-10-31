@@ -6,6 +6,7 @@ import { LoginCredentialsDto } from './dto/Login-credential.dto'
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs'
 import { User } from './user.entity'
+import { LoginService } from './login.service';
 
 @Injectable()
 export class AuthService {
@@ -13,7 +14,8 @@ export class AuthService {
   constructor(
     @InjectRepository(AuthRepository)
     private authRepository: AuthRepository,
-    private jwtService: JwtService
+    private jwtService: JwtService,
+    private loginService: LoginService
     ) {}
 
   // 회원가입
@@ -31,9 +33,17 @@ export class AuthService {
   // 회원탈퇴
   async deleteUser(user: User): Promise<void> {
     const userId = user.userId
-    const result = await this.authRepository.delete(userId)
-    console.log(result)
-  }
+    try {
+      // 해당 유저 찾기
+
+      // 유저 삭제
+      const result = await this.authRepository.delete(userId)
+      console.log(result)
+
+    } catch (err) {
+      console.log(err)
+    }
+  };
 
   // 로그인
   async logIn(loginCredentialsDto: LoginCredentialsDto): Promise<{accessToken: string, refreshToken: string}> {
@@ -51,6 +61,10 @@ export class AuthService {
           expiresIn: 36000
         })
 
+        // 유저 테이블에 refreshToken 저장
+        await this.loginService.setCurrentRefreshToken(refreshToken, user.userId)
+
+        // Body로 accessToken과 refreshToken 전송
         return { accessToken, refreshToken }
       } else {
         throw new UnauthorizedException('login failed')
