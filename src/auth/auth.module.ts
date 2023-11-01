@@ -24,6 +24,7 @@ import { LoginService } from './login.service';
     LoginService, 
     JwtStrategy
   ],
+  // exports를 써주는 이유는? 
   exports: [JwtStrategy, PassportModule]
 })
 export class AuthModule {}

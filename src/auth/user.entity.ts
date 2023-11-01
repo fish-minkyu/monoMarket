@@ -18,6 +18,6 @@ export class User extends BaseEntity {
   @Column({ nullable: true })
   currentRefreshToken: string
 
-  @Column({ type: 'datetime', nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   currentRefreshTokenExp: Date
 }

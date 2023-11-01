@@ -7,6 +7,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs'
 import { User } from './user.entity'
 import { LoginService } from './login.service';
+import { refreshTokenDto } from './dto/refresh-token.dto';
 
 @Injectable()
 export class AuthService {
@@ -42,6 +43,7 @@ export class AuthService {
 
     } catch (err) {
       console.log(err)
+      throw new ConflictException()
     }
   };
 
@@ -52,13 +54,13 @@ export class AuthService {
       // console.log('authService_user', user.userId)
 
       if (user && (await bcrypt.compare(password, user.password))) {
-        const payload = { userId: user.userId } 
+        const payload = { email: user.email } 
         const accessToken = this.jwtService.sign(payload)
 
-        const refreshPayload =  { nickname: user.nickname }
+        const refreshPayload =  { userId: user.userId }
         const refreshToken = this.jwtService.sign(refreshPayload, {
           secret: 'masterKey',
-          expiresIn: 36000
+          expiresIn: 1800000
         })
 
         // 유저 테이블에 refreshToken 저장
@@ -69,9 +71,32 @@ export class AuthService {
       } else {
         throw new UnauthorizedException('login failed')
       }
-
-  }
+  };
 
   // 로그아웃
   // async logOut
+
+  // refreshToken으로 accessToken 재발급
+  async refresh(refreshTokenDto: refreshTokenDto): Promise<{ accessToken: string }> {
+    const { refreshToken } = refreshTokenDto
+
+    try {
+      // refreshToken 검증
+      const decodedRefreshToken = this.jwtService.verify(refreshToken, {secret: 'masterKey'})
+
+      const userId = decodedRefreshToken.userId
+      const user = await this.loginService.getUserIfRefreshTokenMatches(refreshToken, userId)
+      if (!user) {
+        throw new UnauthorizedException('유효하지 않는 유저입니다.')
+      }
+
+      const payload = { email: user.email } 
+      const accessToken = this.jwtService.sign(payload)
+
+      return { accessToken }
+    } catch (err) {
+      console.log(err)
+      throw new ConflictException('재로그인을 해주세요.')
+    }
+  };
 }
