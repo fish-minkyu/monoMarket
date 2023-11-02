@@ -73,9 +73,6 @@ export class AuthService {
       }
   };
 
-  // 로그아웃
-  // async logOut
-
   // refreshToken으로 accessToken 재발급
   async refresh(refreshTokenDto: refreshTokenDto): Promise<{ accessToken: string }> {
     const { refreshToken } = refreshTokenDto
