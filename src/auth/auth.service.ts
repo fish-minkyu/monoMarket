@@ -35,7 +35,7 @@ export class AuthService {
   async deleteUser(user: User): Promise<void> {
     const userId = user.userId
     try {
-      // 해당 유저 찾기
+      // 해당 유저 쿠키 없애기
 
       // 유저 삭제
       const result = await this.authRepository.delete(userId)
