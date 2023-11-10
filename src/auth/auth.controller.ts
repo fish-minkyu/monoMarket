@@ -61,11 +61,11 @@ export class AuthController {
     return { newAccessToken }
   };
 
-  // 카카오 소셜 로그인 (완료) // /kakao -> @UseGuards(AuthGuard('kakao')) -> jwtKakaoStrategy -> 
+  // 카카오 소셜 로그인 (완료) // /kakao -> @UseGuards(AuthGuard('kakao')) -> jwtKakaoStrategy -> kakaoLogin()
   @Get('kakao')
   @UseGuards(AuthGuard('kakao'))
   async kakaoLogin(
-    @Req() req: Request & OAuthCredentialDto,
+    @Req() req: Request & OAuthCredentialDto, //* Q. OAuthCredentialDto는 왜 필요한가? req 객체안에 user값이 있을텐데
     @Res() res: Response) {
       this.authService.OAuthLogin({ req, res })
       res.redirect('/auth')

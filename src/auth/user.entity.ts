@@ -24,4 +24,10 @@ export class User extends BaseEntity {
 
   @Column({ type: 'timestamp', nullable: true })
   currentRefreshTokenExp: Date
+
+  @Column()
+  createdAt: Date
+
+  @Column()
+  updatedAt: Date
 }
