@@ -51,7 +51,7 @@ export class AuthRepository extends Repository<User> {
 
       return user
     } catch (err) {
-      // console.log('repository', err)
+      console.log('repository', err)
       throw new InternalServerErrorException();
     }
   };

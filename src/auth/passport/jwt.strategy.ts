@@ -19,6 +19,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     })
   };
 
+  // AuthGuard가 내부적으로 validate 메서드를 호출한다.
   async validate(payload) {
     const { email, provider } = payload
     
@@ -28,7 +29,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       console.error('Seebal')
       throw new UnauthorizedException()
     }
-    console.log(user)
+    
+    // AuthGuard에 의해 요청(req)객체의 user프로퍼티에 설정
     return user
   };
 };

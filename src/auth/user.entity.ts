@@ -1,4 +1,4 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn, Unique } from "typeorm"
+import { BaseEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from "typeorm"
 import { ProviderStatus } from './provider-status.enum'
 
 @Entity()
@@ -25,9 +25,9 @@ export class User extends BaseEntity {
   @Column({ type: 'timestamp', nullable: true })
   currentRefreshTokenExp: Date
 
-  @Column()
+  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP'})
   createdAt: Date
 
-  @Column()
+  @UpdateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
   updatedAt: Date
-}
+};
