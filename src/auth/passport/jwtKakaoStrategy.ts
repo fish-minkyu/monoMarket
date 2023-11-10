@@ -14,11 +14,17 @@ export class jwtKakaoStrategy extends PassportStrategy(Strategy, 'kakao') {
     private loginService: LoginService) {
     super({
       clientID: process.env.KAKAO_ID,
-      callbackURL: "/auth/kakao/callback",
+      callbackURL: "/auth/kakao",
     });
   };
 
   async validate( accessToken: string, refreshToken: string, profile: any) {
 
+    console.log('profile', profile)
+    return {
+      email: profile._json?.kakao_account?.email,
+      nickname: profile.displayName,
+      provider: ProviderStatus
+    }
   }
 };

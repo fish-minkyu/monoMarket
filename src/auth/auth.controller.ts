@@ -10,14 +10,7 @@ import { LoginService } from './login.service';
 import { Request, Response } from 'express'
 import { JwtStrategy } from './passport/jwt.strategy'
 import { ProviderStatus } from './provider-status.enum';
-
-interface IOAuthUser {
-  user: {
-    email: string,
-    nickname: string,
-    provider: ProviderStatus
-  }
-}
+import { OAuthCredentialDto } from './dto/OAuth-credential.dto'
 
 @Controller('auth')
 export class AuthController {
@@ -26,6 +19,11 @@ export class AuthController {
     private authService: AuthService,
     private loginService: LoginService
     ) {}
+  // 임시 로그인 완료 라우트
+  @Get('/')
+  async success(@Res() res: Response) {
+    res.send({ message: 'login success'})
+  }
 
   // 회원가입 (완료)
   @Post('signup')
@@ -66,14 +64,23 @@ export class AuthController {
   }
 
   // 카카오 소셜 로그인 // /kakao -> @UseGuards(AuthGuard('kakao')) -> jwtKakaoStrategy -> 
+  @Get('kakao')
+  @UseGuards(AuthGuard('kakao'))
+  async kakaoLogin(
+    @Req() req: Request & OAuthCredentialDto,
+    @Res() res: Response) {
+      this.authService.OAuthLogin({ req, res })
+      res.redirect('/auth')
+  }
 
-
+  
   // 구글 소셜 로그인
   @Get('google')
   @UseGuards(AuthGuard('google'))
   async googleLogin(
-    @Req() req: Request & IOAuthUser,
+    @Req() req: Request & OAuthCredentialDto,
     @Res() res: Response) {
       this.authService.OAuthLogin({ req, res })
+      res.redirect('/')
   }
 };

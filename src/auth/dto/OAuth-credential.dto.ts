@@ -1,7 +1,7 @@
 import { IsString } from 'class-validator'
 import { ProviderStatus } from '../provider-status.enum'
 
-export class socialCredentialDto {
+export class OAuthCredentialDto {
   @IsString()
   email: string
 

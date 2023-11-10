@@ -4,7 +4,7 @@ import { ConflictException, Injectable, InternalServerErrorException } from '@ne
 import { AuthCredentialsDto } from './dto/auth-credential.dto'
 import * as bcrypt from 'bcryptjs'
 import { ProviderStatus } from './provider-status.enum'
-import { socialCredentialDto } from './dto/social-credential.dto'
+import { OAuthCredentialDto } from './dto/OAuth-credential.dto'
 
 
 @Injectable()
