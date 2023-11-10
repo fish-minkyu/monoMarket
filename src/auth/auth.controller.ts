@@ -8,8 +8,6 @@ import { User } from './user.entity';
 import { refreshTokenDto } from './dto/refresh-token.dto';
 import { LoginService } from './login.service';
 import { Request, Response } from 'express'
-import { JwtStrategy } from './passport/jwt.strategy'
-import { ProviderStatus } from './provider-status.enum';
 import { OAuthCredentialDto } from './dto/OAuth-credential.dto'
 
 @Controller('auth')
@@ -19,7 +17,7 @@ export class AuthController {
     private authService: AuthService,
     private loginService: LoginService
     ) {}
-  // 임시 로그인 완료 라우트
+  // 임시 로그인 완료 라우트 (완료)
   @Get('/')
   async success(@Res() res: Response) {
     res.send({ message: 'login success'})
@@ -43,7 +41,7 @@ export class AuthController {
   @Post('login')
   async logIn(@Body(ValidationPipe) loginCredentialsDto: LoginCredentialsDto): Promise<{ accessToken: string, refreshToken: string }> {
     return this.authService.logIn(loginCredentialsDto)
-  }
+  };
 
   // 로그아웃 (완료)
   @Post('logout')
@@ -54,16 +52,16 @@ export class AuthController {
     res.clearCookie('refreshToken')
 
     return res.status(200).send({ message: '로그아웃 되었습니다.' })
-  }
+  };
 
   // accessToken 재발급 (완료)
   @Post('refresh')
   async refresh(@Body(ValidationPipe) refreshTokenDto: refreshTokenDto): Promise<{ newAccessToken: string }> {
     const newAccessToken = (await this.authService.refresh(refreshTokenDto)).accessToken
     return { newAccessToken }
-  }
+  };
 
-  // 카카오 소셜 로그인 // /kakao -> @UseGuards(AuthGuard('kakao')) -> jwtKakaoStrategy -> 
+  // 카카오 소셜 로그인 (완료) // /kakao -> @UseGuards(AuthGuard('kakao')) -> jwtKakaoStrategy -> 
   @Get('kakao')
   @UseGuards(AuthGuard('kakao'))
   async kakaoLogin(
@@ -71,16 +69,25 @@ export class AuthController {
     @Res() res: Response) {
       this.authService.OAuthLogin({ req, res })
       res.redirect('/auth')
-  }
+  };
 
-  
-  // 구글 소셜 로그인
+  // 네이버 소셜 로그인 (완료)
+  @Get('naver')
+  @UseGuards(AuthGuard('naver'))
+  async naverLogin(
+    @Req() req: Request & OAuthCredentialDto,
+    @Res() res: Response) {
+      this.authService.OAuthLogin({ req, res })
+      res.redirect('/auth')
+  };
+
+  // 구글 소셜 로그인 (완료)
   @Get('google')
   @UseGuards(AuthGuard('google'))
   async googleLogin(
     @Req() req: Request & OAuthCredentialDto,
     @Res() res: Response) {
       this.authService.OAuthLogin({ req, res })
-      res.redirect('/')
-  }
+      res.redirect('/auth')
+  };
 };

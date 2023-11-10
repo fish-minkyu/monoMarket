@@ -54,15 +54,8 @@ export class AuthService {
       // console.log('authService_user', user.userId)
 
       if (user && (await bcrypt.compare(password, user.password))) {
-        // const payload = { email: user.email } 
-        // const accessToken = this.jwtService.sign(payload)
 
-        // const refreshPayload =  { userId: user.userId }
-        // const refreshToken = this.jwtService.sign(refreshPayload, {
-        //   secret: 'masterKey',
-        //   expiresIn: 1800000
-        // })
-        // console.log('user.provider', user.provider)
+        // accessToken & refreshToken 발행
         const accessToken = await this.loginService.issueAccessToken(user.email, user.provider)
         const refreshToken = await this.loginService.issueRefreshToken(user.userId)
 
@@ -102,16 +95,24 @@ export class AuthService {
 
   // 소셜 로그인
   async OAuthLogin({ req, res }): Promise<{accessToken: string, refreshToken: string}> {
-    const user = await this.authRepository.findOne({ where: { email: req.user.email, provider: req.user.provider }})
+    try {
+      const user = await this.authRepository.findOne({ where: { email: req.user.email, provider: req.user.provider }})
 
-    if (!user) {
-      const user = await this.authRepository.createOAuth(req.user.email, req.user.nickname, req.user.provider)
+      if (!user) {
+        const user = await this.authRepository.createOAuth(req.user.email, req.user.nickname, req.user.provider)
+      }
+      
+      // accessToken & refreshToken 발행
+      // console.log(user.email)
+      const accessToken = await this.loginService.issueAccessToken(user.email, user.provider)
+      const refreshToken = await this.loginService.issueRefreshToken(user.userId)
+  
+      console.log('accessToken', accessToken)
+      console.log('refreshToken', refreshToken)
+      return { accessToken, refreshToken }
+    } catch (err) {
+      console.error(err)
+      throw new Error()
     }
-    
-    // accessToken & refreshToken 발행
-    const accessToken = await this.loginService.issueAccessToken(user.email, user.provider)
-    const refreshToken = await this.loginService.issueRefreshToken(user.userId)
-    
-    return { accessToken, refreshToken }
-  }
+  };
 };

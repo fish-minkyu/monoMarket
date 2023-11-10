@@ -36,42 +36,22 @@ export class AuthRepository extends Repository<User> {
         throw new InternalServerErrorException();
       }
     }
-  }
+  };
 
   // 회원탈퇴
   async deleteUser(user: any): Promise<void> {
     await this.delete(user)
   };
 
-  // OAuth 회원가입
-  // async createOAuth(socialCredentialDto: socialCredentialDto): Promise<User> {
-  //   const { email, nickname, provider } = socialCredentialDto
-  //   const user = this.create({ email, nickname, provider})
-  //   console.log(user)
-
-  //   try {
-  //     await this.save(user)
-
-  //     return user
-  //   } catch (err) {
-  //     if (err.code === '23505') { 
-  //       throw new ConflictException('Existing email');
-  //     } else {
-  //       console.log('repository', err)
-  //       throw new InternalServerErrorException();
-  //     }
-  //   }
-  // };
-
   async createOAuth(email: string, nickname: string, provider: ProviderStatus): Promise<User> {
-    const user = this.create({ email, nickname, provider })
-
+    
     try {
+      const user = this.create({ email, nickname, provider })
       await this.save(user)
 
       return user
     } catch (err) {
-      console.log('repository', err)
+      // console.log('repository', err)
       throw new InternalServerErrorException();
     }
   };

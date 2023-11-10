@@ -1,10 +1,11 @@
 
-import { Injectable, UnauthorizedException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from "@nestjs/passport";
 import { InjectRepository } from '@nestjs/typeorm';
 import { ExtractJwt, Strategy } from "passport-jwt";
 import { AuthRepository } from '../auth.repository';
 import { User } from '../user.entity'
+import { ProviderStatus } from '../provider-status.enum';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -24,8 +25,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const user: User = await this.authRepository.findOne({ where: { email, provider } })
 
     if (!user) {
-      console.error('Error')
-      throw new InternalServerErrorException()
+      console.error('Seebal')
+      throw new UnauthorizedException()
     }
     console.log(user)
     return user

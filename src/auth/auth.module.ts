@@ -6,8 +6,9 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './passport/jwt.strategy';
 import { LoginService } from './login.service';
-import { jwtKakaoStrategy } from 'src/auth/passport/jwtKakaoStrategy';
+import { JwtKakaoStrategy } from 'src/auth/passport/jwtKakaoStrategy';
 import { JwtGoogleStrategy } from './passport/jwtGoogleStrategy';
+import { JwtNaverStrategy } from './passport/jwtNaverStraregy';
 
 @Module({
   imports: [
@@ -25,8 +26,9 @@ import { JwtGoogleStrategy } from './passport/jwtGoogleStrategy';
     AuthRepository,
     LoginService, 
     JwtStrategy,
-    jwtKakaoStrategy,
-    JwtGoogleStrategy
+    JwtKakaoStrategy,
+    JwtGoogleStrategy,
+    JwtNaverStrategy
   ],
   //* exports를 써주는 이유는? 
   exports: [JwtStrategy, PassportModule]
