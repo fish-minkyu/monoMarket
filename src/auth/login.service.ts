@@ -3,27 +3,52 @@ import { AuthRepository } from "./auth.repository";
 import * as bcrypt from 'bcryptjs'
 import { User } from'./user.entity'
 import { BadRequestException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { ProviderStatus } from './provider-status.enum';
 
 export class LoginService {
   constructor(
     @InjectRepository(AuthRepository)
-    private authRepository: AuthRepository
+    private authRepository: AuthRepository,
+    private jwtService: JwtService,
   ) {}
+  // accessToken 발행
+  async issueAccessToken(email: string, provider: ProviderStatus): Promise<string> {
+    const payload = { email, provider } 
+    const accessToken = this.jwtService.sign(payload)
 
+    return accessToken
+  };
+
+  // refreshToken 발행
+  async issueRefreshToken(userId: number): Promise<string> {
+    const payload = { userId }
+    const refreshToken = this.jwtService.sign(payload, {
+      secret: 'masterKey',
+      expiresIn: 1800000
+    })
+
+    return refreshToken
+  };
+
+  // refreshToken을 hashing -> DB에 저장, 토큰 값을 그대로 저장하기 보단, 암호화를 거쳐 DB에 저장
   async getCurrnetHashedRefreshToken(refreshToken: string) {
     const salt = await bcrypt.genSalt()
     const currentRefreshToken = await bcrypt.hash(refreshToken, salt)
+
     return currentRefreshToken
   };
 
+  // refreshToken의 만료시간을 DB User 테아불에 저장
   async getCurrentRefreshTokenExp(): Promise<Date> {
     const currentDate = new Date();
     // Date 형식으로 DB에 저장하기 위해 문자열을 숫자 타입으로 변환(parseInt)
     const currentRefreshTokenExp = new Date(currentDate.getTime() + parseInt('1800000'))
+
     return currentRefreshTokenExp
   }
 
-  // refreshToken의 값과 만료시간을 User 테이블에 저장
+  // refreshToken의 값과 만료시간을 DB User 테이블에 저장
   async setCurrentRefreshToken(refreshToken: string, userId: number) {
     const currentRefreshToken = await this.getCurrnetHashedRefreshToken(refreshToken)
     const currentRefreshTokenExp = await this.getCurrentRefreshTokenExp()

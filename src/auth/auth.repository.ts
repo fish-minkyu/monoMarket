@@ -3,6 +3,8 @@ import { User } from './user.entity'
 import { ConflictException, Injectable, InternalServerErrorException } from '@nestjs/common'
 import { AuthCredentialsDto } from './dto/auth-credential.dto'
 import * as bcrypt from 'bcryptjs'
+import { ProviderStatus } from './provider-status.enum'
+import { socialCredentialDto } from './dto/social-credential.dto'
 
 
 @Injectable()
@@ -11,15 +13,15 @@ export class AuthRepository extends Repository<User> {
     super(User, dataSource.createEntityManager())
   }
 
+  // 로컬 회원가입
   async createUser(authCredentialsDto: AuthCredentialsDto): Promise<void> {
     const { email, nickname, password } = authCredentialsDto
 
     const salt = await bcrypt.genSalt()
     const hashedPassword = await bcrypt.hash(password, salt)
-    const user = this.create({ email, nickname, password: hashedPassword})
+    const user = this.create({ email, nickname, password: hashedPassword }) // user객체를 메모리 상에 생성 (DB에 저장하는 것이 아님)
 
     try {
-      
       await this.save(user)
       console.log('authRepository', '회원가입 성공')
     } catch (err) {
@@ -36,7 +38,41 @@ export class AuthRepository extends Repository<User> {
     }
   }
 
+  // 회원탈퇴
   async deleteUser(user: any): Promise<void> {
     await this.delete(user)
-  }
-}
+  };
+
+  // OAuth 회원가입
+  // async createOAuth(socialCredentialDto: socialCredentialDto): Promise<User> {
+  //   const { email, nickname, provider } = socialCredentialDto
+  //   const user = this.create({ email, nickname, provider})
+  //   console.log(user)
+
+  //   try {
+  //     await this.save(user)
+
+  //     return user
+  //   } catch (err) {
+  //     if (err.code === '23505') { 
+  //       throw new ConflictException('Existing email');
+  //     } else {
+  //       console.log('repository', err)
+  //       throw new InternalServerErrorException();
+  //     }
+  //   }
+  // };
+
+  async createOAuth(email: string, nickname: string, provider: ProviderStatus): Promise<User> {
+    const user = this.create({ email, nickname, provider })
+
+    try {
+      await this.save(user)
+
+      return user
+    } catch (err) {
+      console.log('repository', err)
+      throw new InternalServerErrorException();
+    }
+  };
+};

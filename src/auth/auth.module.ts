@@ -4,8 +4,10 @@ import { AuthService } from './auth.service';
 import { AuthRepository } from './auth.repository';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
-import { JwtStrategy } from './jwt.strategy';
+import { JwtStrategy } from './passport/jwt.strategy';
 import { LoginService } from './login.service';
+import { jwtKakaoStrategy } from 'src/auth/passport/jwtKakaoStrategy';
+import { JwtGoogleStrategy } from './passport/jwtGoogleStrategy';
 
 @Module({
   imports: [
@@ -22,9 +24,11 @@ import { LoginService } from './login.service';
     AuthService, 
     AuthRepository,
     LoginService, 
-    JwtStrategy
+    JwtStrategy,
+    jwtKakaoStrategy,
+    JwtGoogleStrategy
   ],
-  // exports를 써주는 이유는? 
+  //* exports를 써주는 이유는? 
   exports: [JwtStrategy, PassportModule]
 })
 export class AuthModule {}

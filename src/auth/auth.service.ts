@@ -54,16 +54,19 @@ export class AuthService {
       // console.log('authService_user', user.userId)
 
       if (user && (await bcrypt.compare(password, user.password))) {
-        const payload = { email: user.email } 
-        const accessToken = this.jwtService.sign(payload)
+        // const payload = { email: user.email } 
+        // const accessToken = this.jwtService.sign(payload)
 
-        const refreshPayload =  { userId: user.userId }
-        const refreshToken = this.jwtService.sign(refreshPayload, {
-          secret: 'masterKey',
-          expiresIn: 1800000
-        })
+        // const refreshPayload =  { userId: user.userId }
+        // const refreshToken = this.jwtService.sign(refreshPayload, {
+        //   secret: 'masterKey',
+        //   expiresIn: 1800000
+        // })
+        // console.log('user.provider', user.provider)
+        const accessToken = await this.loginService.issueAccessToken(user.email, user.provider)
+        const refreshToken = await this.loginService.issueRefreshToken(user.userId)
 
-        // 유저 테이블에 refreshToken 저장
+        // DB, 유저 테이블에 refreshToken 저장
         await this.loginService.setCurrentRefreshToken(refreshToken, user.userId)
 
         // Body로 accessToken과 refreshToken 전송
@@ -96,4 +99,19 @@ export class AuthService {
       throw new ConflictException('재로그인을 해주세요.')
     }
   };
-}
+
+  // 소셜 로그인
+  async OAuthLogin({ req, res }): Promise<{accessToken: string, refreshToken: string}> {
+    const user = await this.authRepository.findOne({ where: { email: req.user.email, provider: req.user.provider }})
+
+    if (!user) {
+      const user = await this.authRepository.createOAuth(req.user.email, req.user.nickname, req.user.provider)
+    }
+    
+    // accessToken & refreshToken 발행
+    const accessToken = await this.loginService.issueAccessToken(user.email, user.provider)
+    const refreshToken = await this.loginService.issueRefreshToken(user.userId)
+
+    return { accessToken, refreshToken }
+  }
+};

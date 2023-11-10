@@ -1,4 +1,4 @@
-import { Controller, Post, Body, ValidationPipe, UseGuards, Delete, Req, Res } from '@nestjs/common';
+import { Controller, Post, Body, ValidationPipe, UseGuards, Delete, Req, Res, Get } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthCredentialsDto } from './dto/auth-credential.dto';
 import { LoginCredentialsDto } from './dto/Login-credential.dto'
@@ -7,7 +7,17 @@ import { GetUser } from './get-user.decorator';
 import { User } from './user.entity';
 import { refreshTokenDto } from './dto/refresh-token.dto';
 import { LoginService } from './login.service';
-import { Response } from 'express'
+import { Request, Response } from 'express'
+import { JwtStrategy } from './passport/jwt.strategy'
+import { ProviderStatus } from './provider-status.enum';
+
+interface IOAuthUser {
+  user: {
+    email: string,
+    nickname: string,
+    provider: ProviderStatus
+  }
+}
 
 @Controller('auth')
 export class AuthController {
@@ -54,4 +64,16 @@ export class AuthController {
     const newAccessToken = (await this.authService.refresh(refreshTokenDto)).accessToken
     return { newAccessToken }
   }
-}
+
+  // 카카오 소셜 로그인 // /kakao -> @UseGuards(AuthGuard('kakao')) -> jwtKakaoStrategy -> 
+
+
+  // 구글 소셜 로그인
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  async googleLogin(
+    @Req() req: Request & IOAuthUser,
+    @Res() res: Response) {
+      this.authService.OAuthLogin({ req, res })
+  }
+};

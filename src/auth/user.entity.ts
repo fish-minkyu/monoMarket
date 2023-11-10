@@ -13,7 +13,7 @@ export class User extends BaseEntity {
   @Column({ nullable: false })
   nickname: string
 
-  @Column({ nullable: false })
+  @Column({ nullable: true })
   password: string
 
   @Column({ default: ProviderStatus.local }) // default 옵션 사용
