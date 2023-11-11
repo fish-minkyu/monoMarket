@@ -7,6 +7,7 @@ import { GetUser } from 'src/auth/get-user.decorator';
 import { User } from '../auth/user.entity'
 import { Board } from './board.entity';
 import { BoardStatus } from './board-status.enum';
+import { BoardStatusValidationPipe } from './pipes/board-state-validation.pipe'
 
   // user User {
   //   userId: 3,
@@ -24,7 +25,7 @@ export class BoardsController {
   // 의존성 주입
   constructor(private boardsService: BoardsService) {}
 
-  // 게시글 Create
+  // 게시글 Create (완료)
   @Post()
   @UseGuards(AuthGuard())
   async createBoard(
@@ -41,39 +42,41 @@ export class BoardsController {
     return this.boardsService.getAllBoards()
   };
 
-  // 게시글 상세보기 Get
-  @Get('/:id')
+  // 게시글 상세보기 Get (일단 완료)
+  @Get('/:boardId')
   async getBoardById(@Param('boardId') boardId: number): Promise<Board> {
     return this.boardsService.getBoardById(boardId)
-  }
+  };
 
-  // 게시글 상태 수정하기 // 인스타그램과 같다고 생각
-  @Patch('/:id/status')
-  async updateBoardStatus(
-    @Param('boardId', ParseIntPipe) boardId: number,
-    //? validationPipe 주기
-    @Body('status') status: BoardStatus
-  ): Promise<Board> {
-    return this.boardsService.updateBoardStatus(boardId, status)
-  }
-
-
-  // 게시글 내용 수정하기
-  @Patch('/:id')
+  // 게시글 내용 수정하기 (완료)
+  @Patch('/:boardId')
+  @UseGuards(AuthGuard())
   async updateBoard(
+    @GetUser() user: User,
     @Param('boardId', ParseIntPipe) boardId: number,
     @Body() createBoardDto: CreateBoardDto
   ): Promise<Board> {
-    return this.boardsService.updateBoard(boardId, createBoardDto)
-  }
+    return this.boardsService.updateBoard(user, boardId, createBoardDto)
+  };
 
-  // 게시글 삭제
-  @Delete('/:id')
+  // 게시글 상태 수정하기 (완료) // 인스타그램과 같다고 생각
+  @Patch('/:boardId/status')
+  @UseGuards(AuthGuard())
+  async updateBoardStatus(
+    @Param('boardId', ParseIntPipe) boardId: number,
+    //? validationPipe 주기
+    @Body('status', BoardStatusValidationPipe) status: BoardStatus
+  ): Promise<Board> {
+    return this.boardsService.updateBoardStatus(boardId, status)
+  };
+
+  // 게시글 삭제 (완료)
+  @Delete('/:boardId')
+  @UseGuards(AuthGuard())
   async deleteBoard(
     @GetUser() user: User,
     @Param('boardId', ParseIntPipe) boardId: number)
     : Promise<{ message: string }> {
     return this.boardsService.deleteBoard(boardId, user.userId)
-  }
-
+  };
 };

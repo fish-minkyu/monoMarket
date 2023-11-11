@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, ConflictException, UseGuards } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, UseGuards, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm'
 import { AuthRepository } from './auth.repository';
 import { AuthCredentialsDto } from './dto/auth-credential.dto';
@@ -100,19 +100,28 @@ export class AuthService {
 
       if (!user) {
         const user = await this.authRepository.createOAuth(req.user.email, req.user.nickname, req.user.provider)
+        
+        // accessToken & refreshToken 발행
+        const accessToken = await this.loginService.issueAccessToken(user.email, user.provider)
+        const refreshToken = await this.loginService.issueRefreshToken(user.userId)
+        console.log('accessToken', accessToken)
+        console.log('refreshToken', refreshToken)
+
+        return { accessToken, refreshToken }
       }
       
       // accessToken & refreshToken 발행
-      // console.log(user.email)
+      console.log('user.email', user.email)
       const accessToken = await this.loginService.issueAccessToken(user.email, user.provider)
       const refreshToken = await this.loginService.issueRefreshToken(user.userId)
-  
+
       console.log('accessToken', accessToken)
       console.log('refreshToken', refreshToken)
+      
       return { accessToken, refreshToken }
     } catch (err) {
       console.error(err)
-      throw new Error()
+      throw new InternalServerErrorException()
     }
   };
 };

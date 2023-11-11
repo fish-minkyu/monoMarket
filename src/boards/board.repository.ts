@@ -17,7 +17,7 @@ export class BoardRepository extends Repository<Board> {
 
     try {
       const board = this.create({
-        userId,
+        user: { userId }, // board.entity.ts의 user 컬럼 때문에
         email,
         nickname,
         title,

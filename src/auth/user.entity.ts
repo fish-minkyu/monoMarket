@@ -1,5 +1,6 @@
-import { BaseEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from "typeorm"
+import { BaseEntity, Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from "typeorm"
 import { ProviderStatus } from './provider-status.enum'
+import { Board } from '../boards/board.entity'
 
 @Entity()
 // @Unique(['email', 'nickname'])
@@ -7,7 +8,7 @@ export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
   userId: number
 
-  @Column()
+  @Column({ type: 'varchar', length: 50, comment: '유저 이메일' })
   email: string
 
   @Column({ nullable: false })
@@ -30,4 +31,7 @@ export class User extends BaseEntity {
 
   @UpdateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
   updatedAt: Date
+
+  @OneToMany(() => Board, (board) => board.user)
+  boards: Board[]
 };
