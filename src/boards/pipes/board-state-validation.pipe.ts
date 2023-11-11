@@ -2,6 +2,7 @@
 import { PipeTransform, ArgumentMetadata, BadRequestException } from '@nestjs/common';
 import { BoardStatus } from '../board-status.enum';
 
+// Board 상태 변화할 때 유효성 검사
 export class BoardStatusValidationPipe implements PipeTransform {
   readonly StatusOptions = [
     BoardStatus.PUBLIC,
