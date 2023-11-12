@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { DataSource, Repository } from 'typeorm'
 import { Board } from './board.entity'
 import { User } from '../auth/user.entity'
+import { Image } from './Images/images.entity' 
 import { CreateBoardDto } from './dto/create-board.dto'
 import { BoardStatus } from './board-status.enum'
 
@@ -16,6 +17,7 @@ export class BoardRepository extends Repository<Board> {
     const { userId, email, nickname } = user
 
     try {
+      // board 테이블 생성
       const board = this.create({
         user: { userId }, // board.entity.ts의 user 컬럼 때문에
         email,
@@ -32,6 +34,4 @@ export class BoardRepository extends Repository<Board> {
       throw new Error() // 나중에 맞는 에러 객체로 바꿔주기
     }
   }
-
-
 };

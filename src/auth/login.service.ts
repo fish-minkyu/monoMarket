@@ -24,7 +24,7 @@ export class LoginService {
   async issueRefreshToken(userId: number): Promise<string> {
     const payload = { userId }
     const refreshToken = this.jwtService.sign(payload, {
-      secret: 'masterKey',
+      secret: process.env.REFRESHTOKEN_SECRET,
       expiresIn: 1800000
     })
 

@@ -107,6 +107,9 @@ export class AuthService {
         console.log('accessToken', accessToken)
         console.log('refreshToken', refreshToken)
 
+        // DB, 유저 테이블에 refreshToken 저장
+        await this.loginService.setCurrentRefreshToken(refreshToken, user.userId)
+
         return { accessToken, refreshToken }
       }
       
@@ -117,6 +120,9 @@ export class AuthService {
 
       console.log('accessToken', accessToken)
       console.log('refreshToken', refreshToken)
+
+      // DB, 유저 테이블에 refreshToken 저장
+      await this.loginService.setCurrentRefreshToken(refreshToken, user.userId)
       
       return { accessToken, refreshToken }
     } catch (err) {

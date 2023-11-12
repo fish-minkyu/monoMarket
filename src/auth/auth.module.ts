@@ -14,7 +14,7 @@ import { JwtNaverStrategy } from './passport/jwtNaverStraregy';
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt'}),
     JwtModule.register({
-      secret: 'SecretKey',
+      secret: process.env.ACCESSTOKEN_SECRET,
       signOptions: {
         expiresIn: 36000 
       }
