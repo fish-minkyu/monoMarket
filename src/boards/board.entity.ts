@@ -1,7 +1,7 @@
 import { BaseEntity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, Entity, OneToMany } from "typeorm";
 import { BoardStatus } from './board-status.enum'
 import { User } from '../auth/user.entity'
-import { Image } from './Images/images.entity'
+import { Image } from './Images/image.entity'
 
 @Entity()
 export class Board extends BaseEntity {
@@ -33,6 +33,6 @@ export class Board extends BaseEntity {
   @JoinColumn({ name: 'userId'}) //* Q. @JoinColumn의 역할은? 
   user: User //* Q. @JoinColumn() 없애고 userId: number하면 안되나
 
-  @OneToMany(() => Image, image => image.board)
+  @OneToMany(() => Image, (image) => image.board)
   images: Image[]
 };

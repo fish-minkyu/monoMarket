@@ -2,9 +2,10 @@ import { Injectable } from '@nestjs/common'
 import { DataSource, Repository } from 'typeorm'
 import { Board } from './board.entity'
 import { User } from '../auth/user.entity'
-import { Image } from './Images/images.entity' 
 import { CreateBoardDto } from './dto/create-board.dto'
 import { BoardStatus } from './board-status.enum'
+
+
 
 @Injectable()
 export class BoardRepository extends Repository<Board> {
@@ -12,7 +13,10 @@ export class BoardRepository extends Repository<Board> {
     super(Board, dataSource.createEntityManager())
   }
 
-  async createBoard(createBoardDto: CreateBoardDto, user: User): Promise<Board> {
+  async createBoard(
+    createBoardDto: CreateBoardDto, 
+    user: User
+    ): Promise<Board> {
     const { title, content} = createBoardDto
     const { userId, email, nickname } = user
 
@@ -26,8 +30,8 @@ export class BoardRepository extends Repository<Board> {
         content,
         status: BoardStatus.PUBLIC
       })
-
       await this.save(board)
+  
       return board
     } catch (err) {
       console.error(err)

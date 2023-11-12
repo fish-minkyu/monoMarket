@@ -5,17 +5,22 @@ import { User } from'./user.entity'
 import { BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ProviderStatus } from './provider-status.enum';
+import { ConfigService } from '@nestjs/config';
 
 export class LoginService {
   constructor(
     @InjectRepository(AuthRepository)
     private authRepository: AuthRepository,
     private jwtService: JwtService,
+    private configService: ConfigService
   ) {}
   // accessToken 발행
   async issueAccessToken(email: string, provider: ProviderStatus): Promise<string> {
     const payload = { email, provider } 
-    const accessToken = this.jwtService.sign(payload)
+    const accessToken = this.jwtService.sign(payload, {
+      secret: this.configService.get<string>('ACCESSTOKEN_SECRET'),
+      expiresIn: 60 * 60 * 5 * 1000
+    })
 
     return accessToken
   };
@@ -24,7 +29,7 @@ export class LoginService {
   async issueRefreshToken(userId: number): Promise<string> {
     const payload = { userId }
     const refreshToken = this.jwtService.sign(payload, {
-      secret: process.env.REFRESHTOKEN_SECRET,
+      secret: this.configService.get<string>('REFRESHTOKEN_SECRET'),
       expiresIn: 1800000
     })
 

@@ -4,30 +4,38 @@ import { CreateBoardDto } from './dto/create-board.dto';
 import { User } from 'src/auth/user.entity';
 import { Board } from './board.entity'
 import { BoardStatus } from './board-status.enum';
+import { InjectRepository } from '@nestjs/typeorm';
+import { ImageRepository } from '../boards/Images/image.repository'
+import { Image } from './Images/image.entity';
 
 @Injectable()
 export class BoardsService {
   // 의존성 주입
-  constructor(private boardRepository: BoardRepository) {}
+  constructor(
+    @InjectRepository(BoardRepository) //*Q @InjectRepository(BoardRepository) 없어도 잘 되는데 이거 왜 쓰지?
+    private boardRepository: BoardRepository,
+    @InjectRepository(ImageRepository)
+    private imageRepository: ImageRepository
+    ) {}
 
   // 게시글 생성 (완료)
   async createBoard(
     createBoardDto: CreateBoardDto, 
-    user: User
-    ): Promise<Board> {
-    return this.boardRepository.createBoard(createBoardDto, user)
+    user: User,
+    files: Express.MulterS3.File[]
+    ): Promise<{ board: Board; images: Image[]}> { // 반환 타입을 2개 동시에 쓰는 법, 반환 타입을 명시해줘야 반환값이 제대로 뜸
+    const board = await this.boardRepository.createBoard(createBoardDto, user) // await 키워드를 쓰지 않으면, 반환 타입 지정에 문제가 생긴다.
+    const images = await this.imageRepository.createImage(files)
+
+    return { board, images }
   };
 
-  // 게시글 전체 보기 (완료)
+  // 게시글 전체 보기
   async getAllBoards(): Promise<Board[]> {
     try {
       const query = this.boardRepository.createQueryBuilder('board')
       query.where('board.status = :status', { status: BoardStatus.PUBLIC })
       const boards = await query.getMany()
-  
-      // const boards = await this.createQueryBuilder('board')
-      // .where('board.status = :status', { status: 'PUBLIC' })
-      // .getMany();
   
       return boards
     } catch (err) {
@@ -36,7 +44,7 @@ export class BoardsService {
     }
   };
 
-  // 게시글 상세 보기 (일단 완료) 
+  // 게시글 상세 보기
   async getBoardById(boardId: number): Promise<Board> {
       const board = await this.boardRepository.findOne({ where: { boardId }, relations: ['user'] })
 
@@ -77,7 +85,7 @@ export class BoardsService {
       }
     };
 
-  // 게시글 상태 수정하기 (완료)
+  // 게시글 상태 수정하기
   async updateBoardStatus(
     boardId: number, 
     status: BoardStatus
@@ -97,7 +105,7 @@ export class BoardsService {
       }
   };
 
-  // 게시글 삭제 (완료)
+  // 게시글 삭제
   async deleteBoard(
     boardId: number, 
     userId: number)

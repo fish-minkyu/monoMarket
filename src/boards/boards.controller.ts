@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Req, Res, UseGuards, Get, Param, Patch, ParseIntPipe, Delete } from '@nestjs/common';
+import { Controller, Post, Body, Req, Res, UseGuards, Get, Param, Patch, ParseIntPipe, Delete, UseInterceptors, UploadedFiles } from '@nestjs/common';
 import { BoardsService } from './boards.service';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { Request, Response } from 'express'
@@ -8,6 +8,7 @@ import { User } from '../auth/user.entity'
 import { Board } from './board.entity';
 import { BoardStatus } from './board-status.enum';
 import { BoardStatusValidationPipe } from './pipes/board-state-validation.pipe'
+import { FilesInterceptor } from '@nestjs/platform-express';
 
   // user User {
   //   userId: 3,
@@ -25,15 +26,19 @@ export class BoardsController {
   // 의존성 주입
   constructor(private boardsService: BoardsService) {}
 
-  // 게시글 Create (완료)
+  // 게시글 Create
   @Post()
+  @UseInterceptors(FilesInterceptor('file', 10))
   @UseGuards(AuthGuard())
   async createBoard(
     @GetUser() user: User,
-    @Body() createBoardDto: CreateBoardDto
-    ): Promise<Board> {
+    @Body() createBoardDto: CreateBoardDto,
+    @UploadedFiles() files,
+    @Req() req: Request
+    ): Promise<any> {
       console.log('user', user)
-      return this.boardsService.createBoard(createBoardDto, user)
+      console.log('files', files)
+      return this.boardsService.createBoard(createBoardDto, user, files)
   };
 
   // 게시글 전체 Get
@@ -42,13 +47,13 @@ export class BoardsController {
     return this.boardsService.getAllBoards()
   };
 
-  // 게시글 상세보기 Get (일단 완료)
+  // 게시글 상세보기 Get
   @Get('/:boardId')
   async getBoardById(@Param('boardId') boardId: number): Promise<Board> {
     return this.boardsService.getBoardById(boardId)
   };
 
-  // 게시글 내용 수정하기 (완료)
+  // 게시글 내용 수정하기
   @Patch('/:boardId')
   @UseGuards(AuthGuard())
   async updateBoard(
@@ -59,7 +64,7 @@ export class BoardsController {
     return this.boardsService.updateBoard(user, boardId, createBoardDto)
   };
 
-  // 게시글 상태 수정하기 (완료) // 인스타그램과 같다고 생각
+  // 게시글 상태 수정하기 // 인스타그램과 같다고 생각
   @Patch('/:boardId/status')
   @UseGuards(AuthGuard())
   async updateBoardStatus(
@@ -70,7 +75,7 @@ export class BoardsController {
     return this.boardsService.updateBoardStatus(boardId, status)
   };
 
-  // 게시글 삭제 (완료)
+  // 게시글 삭제
   @Delete('/:boardId')
   @UseGuards(AuthGuard())
   async deleteBoard(

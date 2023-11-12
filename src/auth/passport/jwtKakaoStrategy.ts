@@ -27,6 +27,5 @@ export class JwtKakaoStrategy extends PassportStrategy(Strategy, 'kakao') {
     } catch (err) {
       console.error('jwtKakaoStrategy', err)
     }
-   
   }
 };

@@ -13,12 +13,7 @@ import { JwtNaverStrategy } from './passport/jwtNaverStraregy';
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt'}),
-    JwtModule.register({
-      secret: process.env.ACCESSTOKEN_SECRET,
-      signOptions: {
-        expiresIn: 36000 
-      }
-    })
+    JwtModule.register({}),
   ],
   controllers: [AuthController],
   providers: [
@@ -28,7 +23,7 @@ import { JwtNaverStrategy } from './passport/jwtNaverStraregy';
     JwtStrategy,
     JwtKakaoStrategy,
     JwtGoogleStrategy,
-    JwtNaverStrategy
+    JwtNaverStrategy,
   ],
   //* exports를 써주는 이유는? 
   exports: [JwtStrategy, PassportModule]

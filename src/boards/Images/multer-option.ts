@@ -1,7 +1,10 @@
 import { DeleteObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { InternalServerErrorException } from "@nestjs/common";
 import { MulterOptions } from "@nestjs/platform-express/multer/interfaces/multer-options.interface";
-import multerS3 from 'multer-s3'
+import * as multerS3 from 'multer-s3' //ES6 모듈을 사용하는 경우 이렇게 import를 해줘야 한다.
+import * as dotenv from 'dotenv'
+import { dot } from "node:test/reporters";
+dotenv.config()
 
 // s3 옵션 객체 
 const s3 = new S3Client({
@@ -18,7 +21,7 @@ export const multerOptionsFactory = (): MulterOptions => {
     storage: multerS3({
       s3: s3,
       bucket: 'mono-market-image',
-      acl: 'public-read',
+      // acl: 'public-read',
       contentType: multerS3.AUTO_CONTENT_TYPE,
       key: function (req, file, cb) {
 
@@ -48,7 +51,3 @@ export async function deleteS3(imageKey: string): Promise<{ message: string}> {
     throw new InternalServerErrorException()
   }
 };
-
-
-
-
