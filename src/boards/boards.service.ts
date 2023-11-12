@@ -36,7 +36,7 @@ export class BoardsService {
     }
   };
 
-  // 게시글 상세 보기 (일단 완료) //? 메소드 재수정 필요
+  // 게시글 상세 보기 (일단 완료) 
   async getBoardById(boardId: number): Promise<Board> {
       const board = await this.boardRepository.findOne({ where: { boardId }, relations: ['user'] })
 

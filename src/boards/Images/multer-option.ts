@@ -3,6 +3,7 @@ import { InternalServerErrorException } from "@nestjs/common";
 import { MulterOptions } from "@nestjs/platform-express/multer/interfaces/multer-options.interface";
 import multerS3 from 'multer-s3'
 
+// s3 옵션 객체 
 const s3 = new S3Client({
   region: process.env.AWS_REGION,
   credentials: {
@@ -11,6 +12,7 @@ const s3 = new S3Client({
   }
 })
 
+// multer-s3 업로드
 export const multerOptionsFactory = (): MulterOptions => {
   return {
     storage: multerS3({
@@ -29,6 +31,7 @@ export const multerOptionsFactory = (): MulterOptions => {
   };
 };
 
+// multer-s3 삭제 
 export async function deleteS3(imageKey: string): Promise<{ message: string}> {
   const params = {
     Bucket: 'mono-market-image',
