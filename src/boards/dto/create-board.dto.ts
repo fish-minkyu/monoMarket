@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsNumber } from "class-validator"
+import { IsNotEmpty, IsString, IsOptional } from "class-validator"
 
 // board 생성할 때 사용
 export class CreateBoardDto {
@@ -7,5 +7,6 @@ export class CreateBoardDto {
   title: string
 
   @IsString()
+  @IsOptional()
   content?: string
 };

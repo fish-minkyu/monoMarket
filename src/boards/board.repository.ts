@@ -17,7 +17,7 @@ export class BoardRepository extends Repository<Board> {
     createBoardDto: CreateBoardDto, 
     user: User
     ): Promise<Board> {
-    const { title, content} = createBoardDto
+    const { title, content } = createBoardDto
     const { userId, email, nickname } = user
 
     try {

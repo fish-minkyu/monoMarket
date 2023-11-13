@@ -26,7 +26,7 @@ export class BoardsController {
   // 의존성 주입
   constructor(private boardsService: BoardsService) {}
 
-  // 게시글 Create
+  // 게시글 Create (완료)
   @Post()
   @UseInterceptors(FilesInterceptor('file', 10))
   @UseGuards(AuthGuard())
@@ -41,13 +41,13 @@ export class BoardsController {
       return this.boardsService.createBoard(createBoardDto, user, files)
   };
 
-  // 게시글 전체 Get
+  // 게시글 전체 Get (완료)
   @Get()
   async getAllBoards(): Promise<Board[]> {
     return this.boardsService.getAllBoards()
   };
 
-  // 게시글 상세보기 Get
+  // 게시글 상세보기 Get (완료)
   @Get('/:boardId')
   async getBoardById(@Param('boardId') boardId: number): Promise<Board> {
     return this.boardsService.getBoardById(boardId)
@@ -55,6 +55,7 @@ export class BoardsController {
 
   // 게시글 내용 수정하기
   @Patch('/:boardId')
+  @UseInterceptors(FilesInterceptor('file', 10))
   @UseGuards(AuthGuard())
   async updateBoard(
     @GetUser() user: User,
@@ -69,7 +70,6 @@ export class BoardsController {
   @UseGuards(AuthGuard())
   async updateBoardStatus(
     @Param('boardId', ParseIntPipe) boardId: number,
-    //? validationPipe 주기
     @Body('status', BoardStatusValidationPipe) status: BoardStatus
   ): Promise<Board> {
     return this.boardsService.updateBoardStatus(boardId, status)
