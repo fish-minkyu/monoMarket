@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Req, Res, UseGuards, Get, Param, Patch, ParseIntPipe, Delete, UseInterceptors, UploadedFiles } from '@nestjs/common';
+import { Controller, Post, Body, Req, Res, UseGuards, Get, Param, Patch, ParseIntPipe, Delete, UseInterceptors, UploadedFiles, ValidationPipe } from '@nestjs/common';
 import { BoardsService } from './boards.service';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { Request, Response } from 'express'
@@ -32,8 +32,8 @@ export class BoardsController {
   @UseGuards(AuthGuard())
   async createBoard(
     @GetUser() user: User,
-    @Body() createBoardDto: CreateBoardDto,
-    @UploadedFiles() files,
+    @Body(ValidationPipe) createBoardDto: CreateBoardDto,
+    @UploadedFiles() files: Express.MulterS3.File[],
     @Req() req: Request
     ): Promise<any> {
       console.log('user', user)
@@ -60,7 +60,8 @@ export class BoardsController {
   async updateBoard(
     @GetUser() user: User,
     @Param('boardId', ParseIntPipe) boardId: number,
-    @Body() createBoardDto: CreateBoardDto
+    @Body(ValidationPipe) createBoardDto: CreateBoardDto,
+    @UploadedFiles() fiels: Express.MulterS3.File[]
   ): Promise<Board> {
     return this.boardsService.updateBoard(user, boardId, createBoardDto)
   };

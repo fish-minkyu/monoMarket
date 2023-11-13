@@ -15,5 +15,5 @@ export class AuthCredentialsDto {
   password: string
 
   @IsString()
-  confirm?: string
+  confirm: string
 }

@@ -31,21 +31,7 @@ export class AuthService {
     return this.authRepository.createUser(authCredentialsDto)
   }
 
-  // 회원탈퇴
-  async deleteUser(user: User): Promise<void> {
-    const userId = user.userId
-    try {
-      // 해당 유저 쿠키 없애기
 
-      // 유저 삭제
-      const result = await this.authRepository.delete(userId)
-      console.log(result)
-
-    } catch (err) {
-      console.log(err)
-      throw new ConflictException()
-    }
-  };
 
   // 로그인
   async logIn(loginCredentialsDto: LoginCredentialsDto): Promise<{accessToken: string, refreshToken: string}> {
@@ -128,6 +114,22 @@ export class AuthService {
     } catch (err) {
       console.error(err)
       throw new InternalServerErrorException()
+    }
+  };
+
+  // 회원탈퇴
+  async deleteUser(user: User): Promise<void> {
+    const userId = user.userId
+    try {
+      // 해당 유저 쿠키 없애기
+
+      // 유저 삭제
+      const result = await this.authRepository.delete(userId)
+      console.log(result)
+
+    } catch (err) {
+      console.log(err)
+      throw new ConflictException()
     }
   };
 };

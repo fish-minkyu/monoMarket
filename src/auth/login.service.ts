@@ -36,7 +36,7 @@ export class LoginService {
     return refreshToken
   };
 
-  // refreshToken을 hashing -> DB에 저장, 토큰 값을 그대로 저장하기 보단, 암호화를 거쳐 DB에 저장
+  // refreshToken을 hashing하여 반환, 보안 강화를 위해
   async getCurrnetHashedRefreshToken(refreshToken: string) {
     const salt = await bcrypt.genSalt()
     const currentRefreshToken = await bcrypt.hash(refreshToken, salt)
@@ -44,7 +44,7 @@ export class LoginService {
     return currentRefreshToken
   };
 
-  // refreshToken의 만료시간을 DB User 테아불에 저장
+  // refreshToken의 만료시간을 반환
   async getCurrentRefreshTokenExp(): Promise<Date> {
     const currentDate = new Date();
     // Date 형식으로 DB에 저장하기 위해 문자열을 숫자 타입으로 변환(parseInt)
@@ -53,7 +53,7 @@ export class LoginService {
     return currentRefreshTokenExp
   }
 
-  // refreshToken의 값과 만료시간을 DB User 테이블에 저장
+  // refreshToken의 값과 만료시간을 DB의 User 테이블에 저장 -> 토큰 값을 그대로 저장하기 보단, 암호화를 거쳐 DB에 저장
   async setCurrentRefreshToken(refreshToken: string, userId: number) {
     const currentRefreshToken = await this.getCurrnetHashedRefreshToken(refreshToken)
     const currentRefreshTokenExp = await this.getCurrentRefreshTokenExp()
@@ -80,7 +80,7 @@ export class LoginService {
     }
   };
 
-  // refreshToken null값으로 변경
+  // refreshToken null값으로 변경 <- 로그아웃할 때 사용
   async removeRefreshToken(userId: number): Promise<any> {
     return await this.authRepository.update(userId, {
       currentRefreshToken: null,

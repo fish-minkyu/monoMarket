@@ -19,7 +19,7 @@ export class Image extends BaseEntity {
   @UpdateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
   updatedAt: Date
 
-  @ManyToOne(() => Board, (board) => board.images)
+  @ManyToOne(() => Board, (board) => board.images) 
   @JoinColumn({ name: 'boardId'})
   board: Board
 };

@@ -7,6 +7,8 @@ import { BoardStatus } from './board-status.enum';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ImageRepository } from '../boards/Images/image.repository'
 import { Image } from './Images/image.entity';
+import { deleteS3 } from './Images/multer-option'
+import { getManager } from 'typeorm';
 
 @Injectable()
 export class BoardsService {
@@ -70,7 +72,8 @@ export class BoardsService {
     async updateBoard(
       user: User,
       boardId: number,
-      createBoardDto: CreateBoardDto
+      createBoardDto: CreateBoardDto,
+      // files: Express.MulterS3.File[]
     ): Promise<Board> {
       const { title, content } = createBoardDto
   
@@ -85,6 +88,8 @@ export class BoardsService {
         board.title = title
         board.content = content
 
+        
+      
         // 이미지 삭제 후 생성
         await this.boardRepository.save(board)
   
@@ -123,16 +128,35 @@ export class BoardsService {
     userId: number)
     : Promise<{ message: string }> {
     try {
+      // 해당 게시글 조회
       const board = await this.getBoardById(boardId)
 
     // 게시글 삭제 권한이 없을 때 Error
     if (board.user.userId !== userId) {
       throw new UnauthorizedException( '삭제 권한이 없습니다.' )
     }
+    // 이미지 데이터가 있을 시, 이미지 테이블 & S3버킷에서 삭제
+    if (board.images.length) {
+      // Image 테이블 데이터 삭제 //* board보다 image를 먼저 삭제하는 이유는 외래 키 제약조건에 따라 board가 삭제되면 참조하는 image가 여전히 존재하므로 DB에서 오류가 발생하기 때문이다.
+      await this.imageRepository.delete({ board: { boardId } })
 
-    const result = await this.boardRepository.delete({ boardId, user: { userId } })
+      // 게시글 삭제
+      await this.boardRepository.delete({ boardId, user: { userId } })
 
-    return { message: '삭제 성공'}
+      // S3 버킷 삭제
+      const images = board['images']
+      const s3DeletePromise = images.map( image => {
+        const imagePath = new URL(image.url).pathname.substring(1)
+        return deleteS3(imagePath) //* async & await을 안쓰는 이유는 사용하면 deleteS3(imagePath)가 순차적으로 실행되기 때문에 시간 낭비, 병렬 실행으로 시간 절약
+      })
+
+      await Promise.all(s3DeletePromise)
+    } else {
+      // 게시글 삭제
+      await this.boardRepository.delete({ boardId, user: { userId } })
+    }
+
+    return { message: '삭제되었습니다.'}
     } catch (err) {
       console.error(err)
       if (err instanceof UnauthorizedException) throw new UnauthorizedException(err.message)
