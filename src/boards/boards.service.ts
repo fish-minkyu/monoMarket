@@ -26,7 +26,7 @@ export class BoardsService {
     user: User,
     files: Express.MulterS3.File[]
     ): Promise<{ board: Board; images?: Image[] }> { // 반환 타입을 2개 동시에 쓰는 법, 반환 타입을 명시해줘야 반환값이 제대로 뜸
-    const board = await this.boardRepository.createBoard(createBoardDto, user) // await 키워드를 쓰지 않으면, 반환 타입 지정에 문제가 생긴다.
+    const board = await this.boardRepository.createBoard(createBoardDto, user) // 비동기 메소드이므로 await 키워드를 쓰지 않으면 board와 images에는 Promise 객체가 저장된다.
     console.log('board', board)
     
     // files가 있으면 return { board, images } 
@@ -89,41 +89,39 @@ export class BoardsService {
         throw new UnauthorizedException( `게시글 ${board.boardId}번은 수정 권한이 없습니다.` )
     };
 
-    console.log('origin', board)
+    // 이미지가 있을 때, 분기 처리
     if (files) {
        // 기존 이미지 삭제 & S3 버킷 삭제
       await this.imageRepository.delete({ board: { boardId } });
       await this.imageRepository.deleteS3(board['images']);
 
       // 새 이미지 생성
-      const newImages = await this.imageRepository.createImage(files, board.boardId);
-      console.log('newImages', newImages)
+      await this.imageRepository.createImage(files, board.boardId);
 
       // board 객체 다시 로드
       const updatedBoard = await this.getBoardById(boardId);
 
+      // 게시글 변경 사항 메모리에 저장
       updatedBoard.title = title
       updatedBoard.content = content
-      console.log('before', updatedBoard)
+
       // 게시글 변경사항 DB에 저장
       await this.boardRepository.save(updatedBoard)
-      console.log('after', updatedBoard)
       
       return updatedBoard
     }
-      // title 및 content 수정
+      // 게시글 변경 사항 메모리에 저장
       board.title = title
       board.content = content
-      console.log('before', board)
+      
       // 게시글 변경사항 DB에 저장
       await this.boardRepository.save(board)
-      console.log('after', board)
       
       return board
     } catch (err) {
       console.error(err)
       if (err instanceof UnauthorizedException) throw new UnauthorizedException(err.message)
-      if (err instanceof NotFoundException) throw new NotFoundException(err.message)
+      if (err instanceof NotFoundException) throw new NotFoundException(err.message) // 분기 처리를 하지 않아도 걸러서 나옴
       if (err instanceof InternalServerErrorException) throw new InternalServerErrorException(err.message)
     }
   };
@@ -136,7 +134,7 @@ export class BoardsService {
       try {
         const board = await this.getBoardById(boardId)
 
-        // 이미지도 있다면 변경
+        // 이미지가 있을 시 분기 처리
         if (board.images.length) {
           board.images.map( image => {
             return image.boardStatus = status

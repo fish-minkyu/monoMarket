@@ -3,7 +3,6 @@ import { InternalServerErrorException } from "@nestjs/common";
 import { MulterOptions } from "@nestjs/platform-express/multer/interfaces/multer-options.interface";
 import * as multerS3 from 'multer-s3' //* ES6 모듈을 사용하는 경우 이렇게 import를 해줘야 한다. import multerS3 from 'multer-s3'를 하게 되면 contentType이 null값이 와 에러를 일으킨다.
 import * as dotenv from 'dotenv'
-import { dot } from "node:test/reporters";
 dotenv.config()
 
 // s3 옵션 객체 
@@ -38,7 +37,7 @@ export const multerOptionsFactory = (): MulterOptions => {
 export async function deleteS3(imageKey: string) {
   const params = {
     Bucket: 'mono-market-image',
-    Key: imageKey // 삭제할 이미지의 키 'images/1691343931840_multer.png'
+    Key: imageKey // 삭제할 이미지의 키, Ex. 'images/1691343931840_multer.png'
   };
 
   try {

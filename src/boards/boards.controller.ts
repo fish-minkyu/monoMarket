@@ -17,7 +17,7 @@ export class BoardsController {
 
   // 게시글 Create (완료)
   @Post()
-  @UseInterceptors(FilesInterceptor('file', 10))
+  @UseInterceptors(FilesInterceptor('file', 10)) //* 이건 인터셉터일까 아님 데코레이터일까?
   @UseGuards(AuthGuard())
   async createBoard(
     @GetUser() user: User,
@@ -25,8 +25,6 @@ export class BoardsController {
     @UploadedFiles() files: Express.MulterS3.File[],
     @Req() req: Request
     ): Promise<any> {
-      console.log('user', user)
-      console.log('files', files)
       return this.boardsService.createBoard(createBoardDto, user, files)
   };
 
@@ -37,13 +35,13 @@ export class BoardsController {
   };
 
   // 게시글 상세보기 Get (완료)
-  @Get('/:boardId')
+  @Get(':boardId')
   async getBoardById(@Param('boardId') boardId: number): Promise<Board> {
     return this.boardsService.getBoardById(boardId)
   };
 
   // 게시글 내용 수정하기
-  @Patch('/:boardId')
+  @Patch(':boardId')
   @UseInterceptors(FilesInterceptor('file', 10))
   @UseGuards(AuthGuard())
   async updateBoard(
@@ -56,7 +54,7 @@ export class BoardsController {
   };
 
   // 게시글 상태 수정하기 // 인스타그램과 같다고 생각
-  @Patch('/:boardId/status')
+  @Patch(':boardId/status')
   @UseGuards(AuthGuard())
   async updateBoardStatus(
     @Param('boardId', ParseIntPipe) boardId: number,
@@ -66,7 +64,7 @@ export class BoardsController {
   };
 
   // 게시글 삭제
-  @Delete('/:boardId')
+  @Delete(':boardId')
   @UseGuards(AuthGuard())
   async deleteBoard(
     @GetUser() user: User,
