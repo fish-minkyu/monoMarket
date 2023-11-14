@@ -8,7 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ImageRepository } from '../boards/Images/image.repository'
 import { Image } from './Images/image.entity';
 import { deleteS3 } from './Images/multer-option'
-import { getManager } from 'typeorm';
+import { contains } from 'class-validator';
 
 @Injectable()
 export class BoardsService {
@@ -25,12 +25,14 @@ export class BoardsService {
     createBoardDto: CreateBoardDto, 
     user: User,
     files: Express.MulterS3.File[]
-    ): Promise<{ board: Board; images?: Image[]}> { // 반환 타입을 2개 동시에 쓰는 법, 반환 타입을 명시해줘야 반환값이 제대로 뜸
+    ): Promise<{ board: Board; images?: Image[] }> { // 반환 타입을 2개 동시에 쓰는 법, 반환 타입을 명시해줘야 반환값이 제대로 뜸
     const board = await this.boardRepository.createBoard(createBoardDto, user) // await 키워드를 쓰지 않으면, 반환 타입 지정에 문제가 생긴다.
+    console.log('board', board)
     
     // files가 있으면 return { board, images } 
     if (files) {
       const images = await this.imageRepository.createImage(files, board.boardId)
+      console.log('createImage', images)
       return { board, images }
     }
     
@@ -58,7 +60,9 @@ export class BoardsService {
 
   // 게시글 상세 보기 (완료)
   async getBoardById(boardId: number): Promise<Board> {
-      const board = await this.boardRepository.findOne({ where: { boardId }, relations: ['user', 'images'] })
+      const board = await this.boardRepository.findOne({ 
+        where: { boardId, status: BoardStatus.PUBLIC }, 
+        relations: ['user', 'images'] }) //*
 
       // boardId가 없는 id일 경우, 에러 처리
       if (!board) {
@@ -68,47 +72,76 @@ export class BoardsService {
       return board
   };
 
-    // 게시글 내용 수정 //? 수정 시, 이미지 수정 로직을 어떻게 할 것인가?: 전부 다 삭제하고 다시 생성
-    async updateBoard(
-      user: User,
-      boardId: number,
-      createBoardDto: CreateBoardDto,
-      // files: Express.MulterS3.File[]
-    ): Promise<Board> {
-      const { title, content } = createBoardDto
-  
-      try {
-        const board = await this.getBoardById(boardId)
-  
-        // 게시글 수정 권한이 없을 때, 에러 처리
-        if (board.user.userId !== user.userId) {
-          throw new UnauthorizedException( `게시글 ${board.boardId}번은 수정 권한이 없습니다.` )
-      }
-        // title 및 content 수정
-        board.title = title
-        board.content = content
+  // 게시글 내용 수정 (완료)
+  async updateBoard(
+    user: User,
+    boardId: number,
+    createBoardDto: CreateBoardDto,
+    files: Express.MulterS3.File[]
+  ): Promise<Board> {
+    const { title, content } = createBoardDto
 
-        
-      
-        // 이미지 삭제 후 생성
-        await this.boardRepository.save(board)
-  
-        return board
-      } catch (err) {
-        console.error(err)
-        if (err instanceof UnauthorizedException) throw new UnauthorizedException(err.message)
-        if (err instanceof NotFoundException) throw new NotFoundException(err.message)
-        if (err instanceof InternalServerErrorException) throw new InternalServerErrorException(err.message)
-      }
+    try {
+      const board = await this.getBoardById(boardId)
+
+      // 게시글 수정 권한이 없을 때, 에러 처리
+      if (board.user.userId !== user.userId) {
+        throw new UnauthorizedException( `게시글 ${board.boardId}번은 수정 권한이 없습니다.` )
     };
 
-  // 게시글 상태 수정하기
+    console.log('origin', board)
+    if (files) {
+       // 기존 이미지 삭제 & S3 버킷 삭제
+      await this.imageRepository.delete({ board: { boardId } });
+      await this.imageRepository.deleteS3(board['images']);
+
+      // 새 이미지 생성
+      const newImages = await this.imageRepository.createImage(files, board.boardId);
+      console.log('newImages', newImages)
+
+      // board 객체 다시 로드
+      const updatedBoard = await this.getBoardById(boardId);
+
+      updatedBoard.title = title
+      updatedBoard.content = content
+      console.log('before', updatedBoard)
+      // 게시글 변경사항 DB에 저장
+      await this.boardRepository.save(updatedBoard)
+      console.log('after', updatedBoard)
+      
+      return updatedBoard
+    }
+      // title 및 content 수정
+      board.title = title
+      board.content = content
+      console.log('before', board)
+      // 게시글 변경사항 DB에 저장
+      await this.boardRepository.save(board)
+      console.log('after', board)
+      
+      return board
+    } catch (err) {
+      console.error(err)
+      if (err instanceof UnauthorizedException) throw new UnauthorizedException(err.message)
+      if (err instanceof NotFoundException) throw new NotFoundException(err.message)
+      if (err instanceof InternalServerErrorException) throw new InternalServerErrorException(err.message)
+    }
+  };
+
+  // 게시글 상태 수정하기 (완료)
   async updateBoardStatus(
     boardId: number, 
     status: BoardStatus
     ): Promise<Board> {
       try {
         const board = await this.getBoardById(boardId)
+
+        // 이미지도 있다면 변경
+        if (board.images.length) {
+          board.images.map( image => {
+            return image.boardStatus = status
+          })
+        }
 
         board.status = status
         await this.boardRepository.save(board)
@@ -122,7 +155,7 @@ export class BoardsService {
       }
   };
 
-  // 게시글 삭제
+  // 게시글 삭제 (완료)
   async deleteBoard(
     boardId: number, 
     userId: number)
@@ -145,14 +178,9 @@ export class BoardsService {
 
       // S3 버킷 삭제
       const images = board['images']
-      const s3DeletePromise = images.map( image => {
-        const imagePath = new URL(image.url).pathname.substring(1)
-        return deleteS3(imagePath) //* async & await을 안쓰는 이유는 사용하면 deleteS3(imagePath)가 순차적으로 실행되기 때문에 시간 낭비, 병렬 실행으로 시간 절약
-      })
-
-      await Promise.all(s3DeletePromise)
+      await this.imageRepository.deleteS3(images)
     } else {
-      // 게시글 삭제
+      // 이미지가 없을 시, 게시글만 삭제
       await this.boardRepository.delete({ boardId, user: { userId } })
     }
 

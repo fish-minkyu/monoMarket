@@ -10,17 +10,6 @@ import { BoardStatus } from './board-status.enum';
 import { BoardStatusValidationPipe } from './pipes/board-state-validation.pipe'
 import { FilesInterceptor } from '@nestjs/platform-express';
 
-  // user User {
-  //   userId: 3,
-  //   email: 'e951219@naver.com',
-  //   nickname: '어민규',
-  //   password: null,
-  //   provider: 'kakao',
-  //   currentRefreshToken: null,
-  //   currentRefreshTokenExp: null,
-  //   createdAt: 2023-11-10T12:21:28.130Z,
-  //   updatedAt: 2023-11-10T12:21:28.130Z
-  // }
 @Controller('boards')
 export class BoardsController {
   // 의존성 주입
@@ -61,9 +50,9 @@ export class BoardsController {
     @GetUser() user: User,
     @Param('boardId', ParseIntPipe) boardId: number,
     @Body(ValidationPipe) createBoardDto: CreateBoardDto,
-    @UploadedFiles() fiels: Express.MulterS3.File[]
+    @UploadedFiles() files: Express.MulterS3.File[]
   ): Promise<Board> {
-    return this.boardsService.updateBoard(user, boardId, createBoardDto)
+    return this.boardsService.updateBoard(user, boardId, createBoardDto, files)
   };
 
   // 게시글 상태 수정하기 // 인스타그램과 같다고 생각

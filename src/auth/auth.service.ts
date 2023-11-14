@@ -19,7 +19,7 @@ export class AuthService {
     private loginService: LoginService
     ) {}
 
-  // 회원가입
+  // 회원가입 (완료)
   async signUp(authCredentialsDto: AuthCredentialsDto): Promise<void> {
     const { password, confirm } = authCredentialsDto
 
@@ -33,7 +33,7 @@ export class AuthService {
 
 
 
-  // 로그인
+  // 로그인 (완료)
   async logIn(loginCredentialsDto: LoginCredentialsDto): Promise<{accessToken: string, refreshToken: string}> {
       const { email, password } = loginCredentialsDto
       const user = await this.authRepository.findOne({ where: { email } })
@@ -55,7 +55,7 @@ export class AuthService {
       }
   };
 
-  // refreshToken으로 accessToken 재발급
+  // refreshToken으로 accessToken 재발급 (완료)
   async refresh(refreshTokenDto: refreshTokenDto): Promise<{ accessToken: string }> {
     const { refreshToken } = refreshTokenDto
 
@@ -79,9 +79,10 @@ export class AuthService {
     }
   };
 
-  // 소셜 로그인
+  // 소셜 로그인 (완료)
   async OAuthLogin({ req, res }): Promise<{accessToken: string, refreshToken: string}> {
     try {
+      // user 정보 조회
       const user = await this.authRepository.findOne({ where: { email: req.user.email, provider: req.user.provider }})
 
       if (!user) {
@@ -117,7 +118,7 @@ export class AuthService {
     }
   };
 
-  // 회원탈퇴
+  // 회원탈퇴 (완료)
   async deleteUser(user: User): Promise<void> {
     const userId = user.userId
     try {
